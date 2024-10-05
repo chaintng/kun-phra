@@ -26,12 +26,6 @@ The following Python packages are required:
 
 All dependencies are listed in the `requirements.txt` file:
 
-```
-Flask==2.1.1
-line-bot-sdk==2.1.0
-openai==0.27.0
-```
-
 To install the dependencies, run:
 
 ```
