@@ -77,6 +77,7 @@ def summarize_chat(group_id):
         msg['message'] for msg in messages.get(group_id, [])
         if (now - msg['timestamp']).total_seconds() < 86400
         and config.CHAT_SUMMARY_TRIGGER not in msg['message'].upper()
+        and not any(ignore_word.lower() in msg['message'].lower() for ignore_word in config.IGNORE_WORDS)
     ]
 
     if not last_24_hours_messages:
