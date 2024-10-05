@@ -25,6 +25,9 @@ client = OpenAI()
 # Store messages in memory with a deque (limited size, works as a simple queue)
 messages = deque()
 
+# Constant for chat summary trigger
+CHAT_SUMMARY_TRIGGER = "SUMMARY"
+
 # Health check endpoint
 @app.route("/", methods=['GET'])
 def health_check():
@@ -60,8 +63,8 @@ def handle_message(event):
         'timestamp': datetime.datetime.now()
     })
 
-    # Check for "CHAT SUMMARY" trigger
-    if user_message.upper() == "SUM":
+    # Check if the message contains the chat summary trigger keyword
+    if CHAT_SUMMARY_TRIGGER in user_message.upper():
         summary = summarize_chat(group_id)
         if summary:
             line_bot_api.reply_message(
@@ -80,6 +83,7 @@ def summarize_chat(group_id):
     last_24_hours_messages = [
         msg['message'] for msg in messages
         if msg['group_id'] == group_id and (now - msg['timestamp']).total_seconds() < 86400
+        and CHAT_SUMMARY_TRIGGER not in msg['message'].upper()
     ]
 
     if not last_24_hours_messages:
