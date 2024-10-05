@@ -108,7 +108,7 @@ def summarize_chat(group_id, custom_prompt=None):
         return None
 
     # Call OpenAI API to summarize messages
-    prompt = custom_prompt if custom_prompt else "สรุปบทสนทนาเป็นภาษาไทย โดยให้สั้น กระชับ และแสดงเฉพาะจุดสำคัญ (ใช้ Bullet Points) เลือกเฉพาะเนื้อหาที่สำคัญที่สุด ข้ามส่วนที่ไม่จำเป็นหรือเป็นมุกตลก และหากมีการพูดถึงการตัดสินใจ ให้แสดงเฉพาะการตัดสินใจขั้นสุดท้ายเท่านั้น เพิ่มอิโมจิไม่เกิน 5 ตัวในผลลัพธ์:\n"
+    prompt = custom_prompt if custom_prompt else "สรุปบทสนทนาเป็นภาษาไทย ขอภาษาง่ายๆ กันเอง สั้น กระชับ และแสดงเฉพาะจุดสำคัญ (ใช้ Bullet Points) เลือกเฉพาะเนื้อหาที่สำคัญที่สุด ข้ามส่วนที่ไม่จำเป็นหรือเป็นมุกตลก และหากมีการพูดถึงการตัดสินใจ ให้แสดงเฉพาะการตัดสินใจขั้นสุดท้ายเท่านั้น เพิ่มอิโมจิไม่เกิน 5 ตัวในผลลัพธ์:\n"
     prompt += "\n".join(last_24_hours_messages)
     try:
         response = client.chat.completions.create(
