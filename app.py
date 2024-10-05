@@ -24,7 +24,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 messages = deque()
 
 # Health check endpoint
-@app.route("/health", methods=['GET'])
+@app.route("/", methods=['GET'])
 def health_check():
     return jsonify(status="OK"), 200
 
