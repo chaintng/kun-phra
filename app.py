@@ -24,7 +24,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 messages = deque()
 
 # Health check endpoint
-@app.route("/", methods=['GET'])
+@app.route("/health", methods=['GET'])
 def health_check():
     return jsonify(status="OK"), 200
 
@@ -33,9 +33,11 @@ def health_check():
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
+    print(f"Received callback event: {body}")
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
+        print("Invalid signature error while handling callback")
         return "Invalid signature", 400
     return 'OK'
 
@@ -45,6 +47,8 @@ def handle_message(event):
     user_message = event.message.text
     user_id = event.source.user_id
     group_id = event.source.sender_id if event.source.type == "group" else user_id
+
+    print(f"Handling message from user {user_id} in group {group_id}: {user_message}")
 
     # Store incoming messages in memory with timestamp
     messages.append({
@@ -88,6 +92,7 @@ def summarize_chat(group_id):
             max_tokens=150,
             temperature=0.7
         )
+        print(f"OpenAI response: {response.choices[0].text.strip()}")
         return response.choices[0].text.strip()
     except Exception as e:
         print(f"OpenAI API error: {e}")
