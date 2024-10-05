@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-import openai
+from openai import OpenAI
 import os
 import datetime
 from collections import deque
@@ -18,7 +18,9 @@ line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
 # OpenAI API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+OpenAI.api_key = os.getenv('OPENAI_API_KEY')
+
+client = OpenAI()
 
 # Store messages in memory with a deque (limited size, works as a simple queue)
 messages = deque()
@@ -46,7 +48,7 @@ def callback():
 def handle_message(event):
     user_message = event.message.text
     user_id = event.source.user_id
-    group_id = event.source.sender_id if event.source.type == "group" else user_id
+    group_id = event.source.group_id if event.source.type == "group" else user_id
 
     print(f"Handling message from user {user_id} in group {group_id}: {user_message}")
 
@@ -59,7 +61,7 @@ def handle_message(event):
     })
 
     # Check for "CHAT SUMMARY" trigger
-    if user_message.upper() == "CHAT SUMMARY":
+    if user_message.upper() == "SUM":
         summary = summarize_chat(group_id)
         if summary:
             line_bot_api.reply_message(
@@ -84,16 +86,17 @@ def summarize_chat(group_id):
         return None
 
     # Call OpenAI API to summarize messages
-    prompt = "Summarize the following conversation into bullet points:\n" + "\n".join(last_24_hours_messages)
+    prompt = "Use Thai language, Summarize the following conversation into bullet points:\n" + "\n".join(last_24_hours_messages)
     try:
-        response = openai.ChatCompletion.create(
-            engine="gpt-4o-mini",
-            prompt=prompt,
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=150,
             temperature=0.7
         )
-        print(f"OpenAI response: {response.choices[0].text.strip()}")
-        return response.choices[0].text.strip()
+        output = response.choices[0].message.content.strip()
+        print(f"OpenAI response: {output}")
+        return output
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return "Failed to generate summary. Please try again later."
