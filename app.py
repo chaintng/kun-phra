@@ -47,6 +47,16 @@ def handle_message(event):
 
     print(f"Handling message from user {user_id} in group {group_id}: {user_message}")
 
+    # Check if the message is a reset command
+    if user_message.strip() == "ขุนพระ reset":
+        if group_id in messages:
+            messages[group_id].clear()
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="ขุนพระรีเซ็ตข้อมูลสำหรับกลุ่มนี้แล้วครับ! 🗑️")
+            )
+        return
+
     # Store incoming messages in memory with timestamp
     if group_id not in messages:
         messages[group_id] = deque(maxlen=config.MAX_MESSAGES_PER_GROUP)
