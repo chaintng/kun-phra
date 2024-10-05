@@ -87,7 +87,7 @@ def summarize_chat(group_id):
     prompt = "Summarize the following conversation into bullet points:\n" + "\n".join(last_24_hours_messages)
     try:
         response = openai.Completion.create(
-            engine="text-davinci-003",
+            engine="gpt-4o-mini",
             prompt=prompt,
             max_tokens=150,
             temperature=0.7
