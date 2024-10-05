@@ -6,27 +6,19 @@ from openai import OpenAI
 import os
 import datetime
 from collections import deque
+import config
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# LINE API credentials
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
-LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
+line_bot_api = LineBotApi(config.LINE_CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(config.LINE_CHANNEL_SECRET)
 
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
-
-# OpenAI API key
-OpenAI.api_key = os.getenv('OPENAI_API_KEY')
-
+OpenAI.api_key = config.OPENAI_API_KEY
 client = OpenAI()
 
 # Store messages in memory with a deque (limited size, works as a simple queue)
-messages = deque()
-
-# Constant for chat summary trigger
-CHAT_SUMMARY_TRIGGER = "SUMMARY"
+messages = {}  # Dictionary to store messages for each group
 
 # Health check endpoint
 @app.route("/", methods=['GET'])
@@ -56,20 +48,21 @@ def handle_message(event):
     print(f"Handling message from user {user_id} in group {group_id}: {user_message}")
 
     # Store incoming messages in memory with timestamp
-    messages.append({
-        'group_id': group_id,
+    if group_id not in messages:
+        messages[group_id] = deque(maxlen=config.MAX_MESSAGES_PER_GROUP)
+    messages[group_id].append({
         'user_id': user_id,
         'message': user_message,
         'timestamp': datetime.datetime.now()
     })
 
     # Check if the message contains the chat summary trigger keyword
-    if CHAT_SUMMARY_TRIGGER in user_message.upper():
+    if config.CHAT_SUMMARY_TRIGGER in user_message.upper():
         summary = summarize_chat(group_id)
         if summary:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text=summary)
+                TextSendMessage(text="ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂" + summary)
             )
         else:
             line_bot_api.reply_message(
@@ -81,16 +74,16 @@ def handle_message(event):
 def summarize_chat(group_id):
     now = datetime.datetime.now()
     last_24_hours_messages = [
-        msg['message'] for msg in messages
-        if msg['group_id'] == group_id and (now - msg['timestamp']).total_seconds() < 86400
-        and CHAT_SUMMARY_TRIGGER not in msg['message'].upper()
+        msg['message'] for msg in messages.get(group_id, [])
+        if (now - msg['timestamp']).total_seconds() < 86400
+        and config.CHAT_SUMMARY_TRIGGER not in msg['message'].upper()
     ]
 
     if not last_24_hours_messages:
         return None
 
     # Call OpenAI API to summarize messages
-    prompt = "Use Thai language, Summarize the following conversation into bullet points:\n" + "\n".join(last_24_hours_messages)
+    prompt = "ช่วยสรุป บทสนทนาเหล่านี้ เป็นข้อๆ (bullet points) ขอสั้นๆ กระชับๆ เอาเฉพาะๆ ที่สำคัญๆ ที่ตลกๆ สนุกๆ แล้วใส่ Emoji ไปบ้าง:\n" + "\n".join(last_24_hours_messages)
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -103,7 +96,7 @@ def summarize_chat(group_id):
         return output
     except Exception as e:
         print(f"OpenAI API error: {e}")
-        return "Failed to generate summary. Please try again later."
+        return "ขุนพระช่วย! ตอนนี้ @ขุนพระ มีปัญหาอยู่ กรุณารอ @Por มาแก้นะจ้า"
 
 # Run Flask app
 if __name__ == "__main__":
