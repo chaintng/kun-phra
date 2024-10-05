@@ -95,4 +95,4 @@ def summarize_chat(group_id):
 
 # Run Flask app
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(port=8080)

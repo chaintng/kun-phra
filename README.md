@@ -78,7 +78,7 @@ To configure the bot, set the following environment variables:
 5. Use a tunneling service like [ngrok](https://ngrok.com/) to expose the Flask server to the internet:
 
    ```
-   ngrok http 5000
+   ngrok http 8080
    ```
 
 6. Set the webhook URL in the LINE Developer Console to point to your ngrok URL:
