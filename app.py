@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import MessageEvent, TextMessage, TextSendMessage, JoinEvent
 from openai import OpenAI
 import os
 import datetime
@@ -72,6 +72,17 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text="No messages in the last 24 hours to summarize.")
             )
+
+# Handle join events (bot being added to a group)
+@handler.add(JoinEvent)
+def handle_join(event):
+    group_id = event.source.group_id if event.source.type == "group" else None
+    if group_id:
+        welcome_message = "สวัสดีทุกคน! 'ขุนพระ' เองครับ 🐦\nผมสามารถช่วยสรุปบทสนทนาของคุณได้ เพียงพิมพ์เรียก 'ขุนพระ' แล้วผมจะช่วยสรุปให้ครับ!\n\nไม่ต้องห่วงนะครับ ผมไม่มีการเก็บข้อมูลใดๆ แน่นอน ให้ @Por รับประกัน".format(config.CHAT_SUMMARY_TRIGGER)
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=welcome_message)
+        )
 
 # Function to summarize the messages of the last 24 hours
 def summarize_chat(group_id, custom_prompt=None):
