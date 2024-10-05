@@ -23,6 +23,11 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 # Store messages in memory with a deque (limited size, works as a simple queue)
 messages = deque()
 
+# Health check endpoint
+@app.route("/health", methods=['GET'])
+def health_check():
+    return jsonify(status="OK"), 200
+
 # Listen for incoming requests from LINE platform
 @app.route("/callback", methods=['POST'])
 def callback():
