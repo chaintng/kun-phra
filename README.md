@@ -110,4 +110,3 @@ Contributions are welcome! Please open an issue or submit a pull request if you'
 
 - [LINE Messaging API](https://developers.line.biz/en/services/messaging-api/)
 - [OpenAI API](https://openai.com/api/)
-
