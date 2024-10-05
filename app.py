@@ -58,12 +58,14 @@ def handle_message(event):
 
     # Check if the message starts with the chat summary trigger keyword
     if user_message.upper().startswith(config.CHAT_SUMMARY_TRIGGER):
-        custom_prompt = user_message[len(config.CHAT_SUMMARY_TRIGGER):].strip()
+        custom_prompt = None
+        if config.ENABLE_CUSTOM_PROMPT:
+            custom_prompt = user_message[len(config.CHAT_SUMMARY_TRIGGER):].strip()
         summary = summarize_chat(group_id, custom_prompt)
         if summary:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text="ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n" + summary)
+                TextSendMessage(text="ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n" + summary + "\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ")
             )
         else:
             line_bot_api.reply_message(
