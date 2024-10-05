@@ -56,13 +56,14 @@ def handle_message(event):
         'timestamp': datetime.datetime.now()
     })
 
-    # Check if the message contains the chat summary trigger keyword
-    if config.CHAT_SUMMARY_TRIGGER in user_message.upper():
-        summary = summarize_chat(group_id)
+    # Check if the message starts with the chat summary trigger keyword
+    if user_message.upper().startswith(config.CHAT_SUMMARY_TRIGGER):
+        custom_prompt = user_message[len(config.CHAT_SUMMARY_TRIGGER):].strip()
+        summary = summarize_chat(group_id, custom_prompt)
         if summary:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text="ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂" + summary)
+                TextSendMessage(text="ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n" + summary)
             )
         else:
             line_bot_api.reply_message(
@@ -71,7 +72,7 @@ def handle_message(event):
             )
 
 # Function to summarize the messages of the last 24 hours
-def summarize_chat(group_id):
+def summarize_chat(group_id, custom_prompt=None):
     now = datetime.datetime.now()
     last_24_hours_messages = [
         msg['message'] for msg in messages.get(group_id, [])
@@ -84,7 +85,8 @@ def summarize_chat(group_id):
         return None
 
     # Call OpenAI API to summarize messages
-    prompt = "ช่วยสรุป บทสนทนาเหล่านี้ เป็นข้อๆ (bullet points) ขอสั้นๆ กระชับๆ เอาเฉพาะๆ ที่สำคัญๆ ที่ตลกๆ สนุกๆ แล้วใส่ Emoji ไปบ้าง:\n" + "\n".join(last_24_hours_messages)
+    prompt = custom_prompt if custom_prompt else "สรุปบทสนทนาเป็นภาษาไทย โดยให้สั้น กระชับ และแสดงเฉพาะจุดสำคัญ (ใช้ Bullet Points) เลือกเฉพาะเนื้อหาที่สำคัญที่สุด ข้ามส่วนที่ไม่จำเป็นหรือเป็นมุกตลก และหากมีการพูดถึงการตัดสินใจ ให้แสดงเฉพาะการตัดสินใจขั้นสุดท้ายเท่านั้น เพิ่มอิโมจิไม่เกิน 5 ตัวในผลลัพธ์:\n"
+    prompt += "\n".join(last_24_hours_messages)
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
