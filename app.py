@@ -134,7 +134,7 @@ def summarize_chat(group_id):
     prompt = "Summarize all text after this prompt as bullet points in Thai language. Keep it short, concise, and focus only on the high-priority information. Emojify the result, used up to 5 emojis. Do not include other opinions or extra details. If there is decision-making involved, just give the conclusion. Make the summary simple and easy to read.\n"
     prompt += "\n".join(last_24_hours_messages)
     output = send_custom_prompt(prompt)
-    return "ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n\n" + summary + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ"
+    return "ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n\n" + output + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ"
 
 
 # Run Flask app
