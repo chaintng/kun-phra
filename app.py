@@ -112,9 +112,9 @@ def summarize_chat(group_id, custom_prompt=None):
     prompt += "\n".join(last_24_hours_messages)
     try:
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=150,
+            max_tokens=500,
             temperature=0.7
         )
         output = response.choices[0].message.content.strip()
