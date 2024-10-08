@@ -69,13 +69,13 @@ def handle_message(event):
     # Check if the message starts with the chat summary trigger keyword
     if user_message.upper().startswith(config.CHAT_SUMMARY_TRIGGER):
         custom_prompt = None
-        if config.ENABLE_CUSTOM_PROMPT:
-            custom_prompt = user_message[len(config.CHAT_SUMMARY_TRIGGER):].strip()
-        summary = summarize_chat(group_id, custom_prompt)
-        if summary:
+        if config.ENABLE_CUSTOM_PROMPT_FOR_ALL_CHANNEL or group_id in config.WHITELIST_CUSTOM_PROMPT_GROUPS:
+            custom_prompt = user_message[len(config.CHAT_SUMMARY_TRIGGER):].strip() + " ตอบสั้นๆ ครับ ใส่ emoji ผสม สูงสุด 5"
+        output = send_custom_prompt(custom_prompt) if custom_prompt else summarize_chat(group_id)
+        if output:
             line_bot_api.reply_message(
                 event.reply_token,
-                TextSendMessage(text="ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n\n" + summary + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ")
+                TextSendMessage(text=output)
             )
             messages[group_id].clear()
         else:
@@ -95,22 +95,8 @@ def handle_join(event):
             TextSendMessage(text=welcome_message)
         )
 
-# Function to summarize the messages of the last 24 hours
-def summarize_chat(group_id, custom_prompt=None):
-    now = datetime.datetime.now()
-    last_24_hours_messages = [
-        msg['message'] for msg in messages.get(group_id, [])
-        if (now - msg['timestamp']).total_seconds() < 86400
-        and config.CHAT_SUMMARY_TRIGGER not in msg['message'].upper()
-        and not any(ignore_word.lower() in msg['message'].lower() for ignore_word in config.IGNORE_WORDS)
-    ]
-
-    if not last_24_hours_messages:
-        return None
-
-    # Call OpenAI API to summarize messages
-    prompt = custom_prompt if custom_prompt else "Summarize all text after this prompt as bullet points in Thai language. Keep it short, concise, and focus only on the high-priority information. Emojify the result, used up to 5 emojis. Do not include other opinions or extra details. If there is decision-making involved, just give the conclusion. Make the summary simple and easy to read.\n"
-    prompt += "\n".join(last_24_hours_messages)
+# Function to send custom prompt to OpenAI API
+def send_custom_prompt(prompt):
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -124,6 +110,26 @@ def summarize_chat(group_id, custom_prompt=None):
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return "ขุนพระช่วย! ตอนนี้ @ขุนพระ มีปัญหาอยู่ กรุณารอ @Por มาแก้นะจ้า"
+
+# Function to summarize the messages of the last 24 hours
+def summarize_chat(group_id):
+    now = datetime.datetime.now()
+    last_24_hours_messages = [
+        msg['message'] for msg in messages.get(group_id, [])
+        if (now - msg['timestamp']).total_seconds() < 86400
+        and config.CHAT_SUMMARY_TRIGGER not in msg['message'].upper()
+        and not any(ignore_word.lower() in msg['message'].lower() for ignore_word in config.IGNORE_WORDS)
+    ]
+
+    if not last_24_hours_messages:
+        return None
+
+    # Call OpenAI API to summarize messages
+    prompt = "Summarize all text after this prompt as bullet points in Thai language. Keep it short, concise, and focus only on the high-priority information. Emojify the result, used up to 5 emojis. Do not include other opinions or extra details. If there is decision-making involved, just give the conclusion. Make the summary simple and easy to read.\n"
+    prompt += "\n".join(last_24_hours_messages)
+    output = send_custom_prompt(prompt)
+    return "ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n\n" + summary + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ"
+
 
 # Run Flask app
 if __name__ == "__main__":
