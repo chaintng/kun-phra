@@ -91,7 +91,7 @@ def handle_message(event):
         print(f"Error: {e}")
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="ขุนพระ! ตอนนี้ผมเจอปัญหาทางเทคนิค 😭 กรุณารอ @Por มาแก้ทีนะจ้า")
+            TextSendMessage(text="ขอโทษครับ, ตอนนี้ ขุนพระ เจอปัญหาทางเทคนิค 😭 กรุณารอ @Por มาแก้ทีนะจ้า")
         )
 
 # Handle join events (bot being added to a group)
@@ -134,7 +134,7 @@ def summarize_chat(group_id):
     prompt = "Summarize all text after this prompt as bullet points in Thai language. Keep it short, concise, and focus only on the high-priority information. Emojify the result, used up to 5 emojis. Do not include other opinions or extra details. If there is decision-making involved, just give the conclusion. Make the summary simple and easy to read.\n"
     prompt += "\n".join(last_24_hours_messages)
     output = send_custom_prompt(prompt)
-    return "ขุนพระ! คุยไรกันเยอะแยะ! เดี๋ยวผมสรุปให้ฟังครับ 😂\n\n" + output + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ"
+    return "มาครับ! เดี๋ยว ขุนพระ สรุปให้ฟังครับ 😂\n\n" + output + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ"
 
 
 # Run Flask app
