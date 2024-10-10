@@ -136,7 +136,7 @@ def summarize_chat(group_id):
 
     ## Reset message after summarize
     messages[group_id].clear()
-    return "มาครับ! เดี๋ยว ขุนพระ สรุปให้ฟังครับ\n\n" + output + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ"
+    return "ได้ครับ, ขุนพระ สรุปให้ฟังครับ\n\n" + output + "\n\n ปล. ไม่ต้องห่วงนะคับ ผมไม่ได้แอบเก็บข้อมูลใดๆ"
 
 
 # Run Flask app
