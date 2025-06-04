@@ -14,8 +14,7 @@ app = Flask(__name__)
 line_bot_api = LineBotApi(config.LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(config.LINE_CHANNEL_SECRET)
 
-OpenAI.api_key = config.OPENAI_API_KEY
-client = OpenAI()
+client = OpenAI(api_key=config.OPENAI_API_KEY)
 
 # Store messages in memory with a deque (limited size, works as a simple queue)
 messages = {}  # Dictionary to store messages for each group
